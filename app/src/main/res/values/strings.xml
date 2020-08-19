@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Journaling</string>
+    <string name="mynotes">MyNotes</string>
+    <string name="search_notes">Search Notes</string>
+</resources>
