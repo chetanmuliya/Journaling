@@ -1,10 +1,12 @@
 package in.notes.app.journaling.adapters;
 
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -54,6 +56,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NotesViewHol
     public static class NotesViewHolder extends RecyclerView.ViewHolder {
 
         TextView textTitle,textSubtitle,textDateTime,textNote;
+        ImageView imageNote;
         LinearLayout layoutNote;
 
         public NotesViewHolder(@NonNull View itemView) {
@@ -62,6 +65,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NotesViewHol
             textSubtitle = itemView.findViewById(R.id.textSubTitle);
             textDateTime = itemView.findViewById(R.id.textDateTime);
             layoutNote = itemView.findViewById(R.id.layoutNote);
+            imageNote = itemView.findViewById(R.id.imageNote);
         }
 
         void setNote(Note note){
@@ -77,6 +81,12 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NotesViewHol
                 gradientDrawable.setColor(Color.parseColor(note.getColor()));
             else
                 gradientDrawable.setColor(Color.parseColor("#333333"));
+
+            if(note.getImagePath() != null) {
+                imageNote.setImageBitmap(BitmapFactory.decodeFile(note.getImagePath()));
+                imageNote.setVisibility(View.VISIBLE);
+            }else
+                imageNote.setVisibility(View.GONE);
         }
     }
 }

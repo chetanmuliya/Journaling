@@ -2,4 +2,8 @@
     <string name="app_name">Journaling</string>
     <string name="mynotes">MyNotes</string>
     <string name="search_notes">Search Notes</string>
+    <string name="add_image">Add Image</string>
+    <string name="add_url">Add URL</string>
+    <string name="add">ADD</string>
+    <string name="cancel">CANCEL</string>
 </resources>
