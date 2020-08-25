@@ -20,14 +20,18 @@ import in.notes.app.journaling.R;
 import in.notes.app.journaling.adapters.NotesAdapter;
 import in.notes.app.journaling.database.Note;
 import in.notes.app.journaling.database.NoteDatabase;
+import in.notes.app.journaling.listeners.NotesListener;
 
 import static in.notes.app.journaling.constant.Constants.REQUEST_CODE_ADD_NOTE;
+import static in.notes.app.journaling.constant.Constants.REQUEST_CODE_SHOW_NOTE;
+import static in.notes.app.journaling.constant.Constants.REQUEST_CODE_UPDATE_NOTE;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements NotesListener {
 
     private RecyclerView notesRecyclerView;
     private NotesAdapter adapter;
     private List<Note> notesList;
+    private int noteClickedPosition = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,13 +55,13 @@ public class MainActivity extends AppCompatActivity {
         );
 
         notesList = new ArrayList<>();
-        adapter = new NotesAdapter(notesList);
+        adapter = new NotesAdapter(notesList,this);
         notesRecyclerView.setAdapter(adapter);
 
-        getNotes();
+        getNotes(REQUEST_CODE_SHOW_NOTE);
     }
 
-    private void getNotes(){
+    private void getNotes(final int requestcode){
         @SuppressLint("StaticFieldLeak")
         class GetNoteTask extends AsyncTask<Void,Void, List<Note>> {
 
@@ -71,14 +75,18 @@ public class MainActivity extends AppCompatActivity {
             @Override
             protected void onPostExecute(List<Note> notes) {
                 super.onPostExecute(notes);
-                if(notesList.size() == 0){
+                if(requestcode == REQUEST_CODE_SHOW_NOTE){
                     notesList.addAll(notes);
                     adapter.notifyDataSetChanged();
-                }else {
+                }else if(requestcode == REQUEST_CODE_ADD_NOTE){
                     notesList.add(0,notes.get(0));
                     adapter.notifyItemInserted(0);
+                    notesRecyclerView.smoothScrollToPosition(0);
+                }else if(requestcode == REQUEST_CODE_UPDATE_NOTE){
+                    notesList.remove(noteClickedPosition);
+                    notesList.add(noteClickedPosition,notes.get(noteClickedPosition));
+                    adapter.notifyItemChanged(noteClickedPosition);
                 }
-                notesRecyclerView.smoothScrollToPosition(0);
             }
         }
         new GetNoteTask().execute();
@@ -88,7 +96,19 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == REQUEST_CODE_ADD_NOTE && resultCode == RESULT_OK){
-            getNotes();
+            getNotes(REQUEST_CODE_ADD_NOTE);
+        }else if(requestCode == REQUEST_CODE_UPDATE_NOTE && resultCode == RESULT_OK){
+            if (data != null)
+                getNotes(REQUEST_CODE_UPDATE_NOTE);
         }
+    }
+
+    @Override
+    public void onNoteClicked(Note note, int pos) {
+        noteClickedPosition = pos;
+        Intent intent = new Intent(getApplicationContext(),CreateNoteActivity.class);
+        intent.putExtra("isViewOrUpdate",true);
+        intent.putExtra("note",note);
+        startActivityForResult(intent,REQUEST_CODE_UPDATE_NOTE);
     }
 }

@@ -61,6 +61,8 @@ public class CreateNoteActivity extends AppCompatActivity {
 
     private AlertDialog dialogAddUrl;
 
+    private Note alreadyAvailableNote;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -99,8 +101,32 @@ public class CreateNoteActivity extends AppCompatActivity {
         selectedColor = "#333333";
         selectedImagePath = "";
 
+        if(getIntent().getBooleanExtra("isViewOrUpdate",false)){
+            alreadyAvailableNote = (Note) getIntent().getSerializableExtra("note");
+            setVieworUpdateNote();
+        }
+
         initMiscellaneous();
         setViewSubtitleIndicatorColor();
+    }
+
+    private void setVieworUpdateNote() {
+        inputNoteTitle.setText(alreadyAvailableNote.getTitle());
+        inputNoteSubTitle.setText(alreadyAvailableNote.getSubtitle());
+        inputNoteText.setText(alreadyAvailableNote.getNoteText());
+        dateTimeText.setText(alreadyAvailableNote.getDateTime());
+
+        if(alreadyAvailableNote.getImagePath() != null && !alreadyAvailableNote.getImagePath().trim().isEmpty()){
+            imageNote.setImageBitmap(BitmapFactory.decodeFile(alreadyAvailableNote.getImagePath()));
+            imageNote.setVisibility(View.VISIBLE);
+            selectedImagePath = alreadyAvailableNote.getImagePath();
+        }
+
+        if(alreadyAvailableNote.getWeblink() != null && !alreadyAvailableNote.getWeblink().trim().isEmpty()){
+            txtWebUrl.setText(alreadyAvailableNote.getWeblink());
+            layoutWebUrl.setVisibility(View.VISIBLE);
+        }
+
     }
 
     private void saveNote(){
@@ -117,14 +143,18 @@ public class CreateNoteActivity extends AppCompatActivity {
 
         final Note note = new Note();
         note.setTitle(inputNoteTitle.getText().toString());
-        note.setSubtitle(inputNoteTitle.getText().toString());
-        note.setNoteText(inputNoteTitle.getText().toString());
+        note.setSubtitle(inputNoteSubTitle.getText().toString());
+        note.setNoteText(inputNoteText.getText().toString());
         note.setDateTime(dateTimeText.getText().toString());
         note.setColor(selectedColor);
         note.setImagePath(selectedImagePath);
 
         if(layoutWebUrl.getVisibility() == View.VISIBLE){
             note.setWeblink(txtWebUrl.getText().toString());
+        }
+
+        if (alreadyAvailableNote != null){
+            note.setId(alreadyAvailableNote.getId());
         }
 
         @SuppressLint("StaticFieldLeak")
@@ -227,6 +257,23 @@ public class CreateNoteActivity extends AppCompatActivity {
                 setViewSubtitleIndicatorColor();
             }
         });
+
+        if (alreadyAvailableNote != null && alreadyAvailableNote.getColor() != null && !alreadyAvailableNote.getColor().trim().isEmpty()){
+            switch (alreadyAvailableNote.getColor()){
+                case "#FDBE3B":
+                    layoutMiscellaneous.findViewById(R.id.viewColor2).performClick();
+                    break;
+                case "#FF4842":
+                    layoutMiscellaneous.findViewById(R.id.viewColor3).performClick();
+                    break;
+                case "#3A52FC":
+                    layoutMiscellaneous.findViewById(R.id.viewColor4).performClick();
+                    break;
+                case "#000000":
+                    layoutMiscellaneous.findViewById(R.id.viewColor5).performClick();
+                    break;
+            }
+        }
 
         layoutMiscellaneous.findViewById(R.id.layoutAddImage).setOnClickListener(new View.OnClickListener() {
             @Override
