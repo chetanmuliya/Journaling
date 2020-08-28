@@ -6,4 +6,6 @@
     <string name="add_url">Add URL</string>
     <string name="add">ADD</string>
     <string name="cancel">CANCEL</string>
+    <string name="delete_note">Delete Note</string>
+    <string name="delete">DELETE</string>
 </resources>

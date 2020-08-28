@@ -60,6 +60,7 @@ public class CreateNoteActivity extends AppCompatActivity {
     private String selectedImagePath;
 
     private AlertDialog dialogAddUrl;
+    private AlertDialog dialogDeleteNote;
 
     private Note alreadyAvailableNote;
 
@@ -309,6 +310,17 @@ public class CreateNoteActivity extends AppCompatActivity {
                 showAddUrlDialog();
             }
         });
+
+        if(alreadyAvailableNote != null){
+            layoutMiscellaneous.findViewById(R.id.layoutDelete).setVisibility(View.VISIBLE);
+            layoutMiscellaneous.findViewById(R.id.layoutDelete).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                    showDeleteNoteDialog();
+                }
+            });
+        }
     }
 
     private void getPermission() {
@@ -425,10 +437,68 @@ public class CreateNoteActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
                     dialogAddUrl.dismiss();
+                    dialogAddUrl = null;
                 }
             });
 
             dialogAddUrl.show();
+        }
+    }
+
+    private void showDeleteNoteDialog(){
+        if(dialogDeleteNote == null){
+            AlertDialog.Builder builder = new AlertDialog.Builder(CreateNoteActivity.this);
+            View view = LayoutInflater.from(this).inflate(
+                    R.layout.layout_delete,
+                    (ViewGroup) findViewById(R.id.layoutDeleteNoteContainer)
+            );
+            builder.setView(view);
+
+            dialogDeleteNote = builder.create();
+            if(dialogDeleteNote.getWindow() != null){
+                dialogDeleteNote.getWindow().setBackgroundDrawable(new ColorDrawable(0));
+            }
+
+            view.findViewById(R.id.textDelete).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    deleteNote();
+                }
+            });
+
+            view.findViewById(R.id.textCancel).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    dialogDeleteNote.dismiss();
+                    dialogDeleteNote = null;
+                }
+            });
+
+            dialogDeleteNote.show();
+        }
+    }
+
+    private void deleteNote() {
+        new DeleteNoteTask().execute();
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    class DeleteNoteTask extends AsyncTask<Void,Void,Void>{
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            NoteDatabase.getNoteDatabase(CreateNoteActivity.this).noteDao()
+                    .delete(alreadyAvailableNote);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            Intent intent = new Intent();
+            intent.putExtra("isNoteDeleted",true);
+            setResult(RESULT_OK,intent);
+            finish();
         }
     }
 }

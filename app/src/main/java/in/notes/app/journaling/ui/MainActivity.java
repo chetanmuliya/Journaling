@@ -9,8 +9,11 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 
 import java.util.ArrayList;
@@ -58,10 +61,31 @@ public class MainActivity extends AppCompatActivity implements NotesListener {
         adapter = new NotesAdapter(notesList,this);
         notesRecyclerView.setAdapter(adapter);
 
-        getNotes(REQUEST_CODE_SHOW_NOTE);
+        getNotes(REQUEST_CODE_SHOW_NOTE,false);
+
+        EditText inputSearch = findViewById(R.id.inputSearch);
+        inputSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                adapter.cancelTimer();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if(notesList.size()!= 0){
+                    adapter.searchNotes(s.toString());
+                }
+            }
+        });
     }
 
-    private void getNotes(final int requestcode){
+    private void getNotes(final int requestcode,final boolean isNoteDeleted){
         @SuppressLint("StaticFieldLeak")
         class GetNoteTask extends AsyncTask<Void,Void, List<Note>> {
 
@@ -84,8 +108,12 @@ public class MainActivity extends AppCompatActivity implements NotesListener {
                     notesRecyclerView.smoothScrollToPosition(0);
                 }else if(requestcode == REQUEST_CODE_UPDATE_NOTE){
                     notesList.remove(noteClickedPosition);
-                    notesList.add(noteClickedPosition,notes.get(noteClickedPosition));
-                    adapter.notifyItemChanged(noteClickedPosition);
+                    if (isNoteDeleted)
+                        adapter.notifyItemRemoved(noteClickedPosition);
+                    else {
+                        notesList.add(noteClickedPosition, notes.get(noteClickedPosition));
+                        adapter.notifyItemChanged(noteClickedPosition);
+                    }
                 }
             }
         }
@@ -96,10 +124,10 @@ public class MainActivity extends AppCompatActivity implements NotesListener {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == REQUEST_CODE_ADD_NOTE && resultCode == RESULT_OK){
-            getNotes(REQUEST_CODE_ADD_NOTE);
+            getNotes(REQUEST_CODE_ADD_NOTE,false);
         }else if(requestCode == REQUEST_CODE_UPDATE_NOTE && resultCode == RESULT_OK){
             if (data != null)
-                getNotes(REQUEST_CODE_UPDATE_NOTE);
+                getNotes(REQUEST_CODE_UPDATE_NOTE,data.getBooleanExtra("isNoteDeleted",false));
         }
     }
 
