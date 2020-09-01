@@ -125,6 +125,22 @@ public class CreateNoteActivity extends AppCompatActivity {
             }
         });
 
+        if (getIntent().getBooleanExtra("isFromQuickActions",false)){
+            String type = getIntent().getStringExtra("quickActionType");
+            if (type != null){
+                if (type.equals("image")){
+                    selectedImagePath = getIntent().getStringExtra("imagePath");
+                    imageNote.setImageBitmap(BitmapFactory.decodeFile(selectedImagePath));
+                    imageNote.setVisibility(View.VISIBLE);
+                    findViewById(R.id.imageRemoveImage).setVisibility(View.VISIBLE);
+                }else if (type.equals("weblink")){
+                    String text = getIntent().getStringExtra("url");
+                    txtWebUrl.setText(text);
+                    layoutWebUrl.setVisibility(View.VISIBLE);
+                }
+            }
+        }
+
         initMiscellaneous();
         setViewSubtitleIndicatorColor();
     }
